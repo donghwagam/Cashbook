@@ -41,12 +41,10 @@ public class CashBookListByMonthController extends HttpServlet {
 		System.out.println(m+" <-- m");
 		
 		/*
-		 
 		 1) startBlank
 		 2) endDay
 		 3) endBlank
 		 4) totalBlank
-		 
 		 */
 		
 		// 시작시 필요한 공백 <TD>의 갯수를 구하는 알고리즘 -> startBlank 
