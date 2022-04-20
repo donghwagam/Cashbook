@@ -7,16 +7,17 @@ public class Cashbook {
     private String memo;
     private String updateDate;
     private String createDate;
-
+    private int cash;
 
 
     //------------------------------------------ toString
 
-    @Override
-    public String toString() {
-        return "cashbook [cashbookNo=" + cashbookNo + ", cashDate=" + cashDate + ", kind=" + kind + ", memo=" + memo
-                + ", updateDate=" + updateDate + ", createDate=" + createDate + "]";
-    }
+
+	@Override
+	public String toString() {
+		return "Cashbook [cashbookNo=" + cashbookNo + ", cashDate=" + cashDate + ", kind=" + kind + ", memo=" + memo
+				+ ", updateDate=" + updateDate + ", createDate=" + createDate + ", cash=" + cash + "]";
+	}
 
     //------------------------------------------ get set
     public int getCashbookNo() {
@@ -55,6 +56,11 @@ public class Cashbook {
     public void setCreateDate(String createDate) {
         this.createDate = createDate;
     }
-
+    public int getCash() {
+  		return cash;
+  	}
+  	public void setCash(int cash) {
+  		this.cash = cash;
+  	}
 
 }
