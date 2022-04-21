@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import vo.Cashbook;
+import vo.Hashtag;
 
 // MODEL
 public class CashbookDao {
@@ -120,4 +121,143 @@ public class CashbookDao {
 		}
 	}
 	
+	// 상세보기 눌렀을때 정보들고오기위한 메서드
+	public Cashbook selectCashBookOne(int cashbookNo) {
+		// return할 cashBook 선언
+		Cashbook cashBook = null;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			Class.forName("org.mariadb.jdbc.Driver");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			String sql = "SELECT * FROM cashbook WHERE cashbook_no =?";
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, cashbookNo);
+			
+			rs = stmt.executeQuery();
+			
+			if(rs.next()) {
+				cashBook = new Cashbook();
+				cashBook.setCashbookNo(rs.getInt("cashbook_no"));
+				cashBook.setCashDate(rs.getString("cash_date"));
+				cashBook.setKind(rs.getString("kind"));
+				cashBook.setCash(rs.getInt("cash"));
+				cashBook.setMemo(rs.getString("memo"));
+				cashBook.setUpdateDate(rs.getString("update_date"));
+				cashBook.setCreateDate(rs.getString("create_date"));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return cashBook;	
+	}
+	
+	public int deleteCashbook(int cashbookNo) {
+		int row = 0;
+		// 자원 준비
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		
+		try {
+			Class.forName("org.mariadb.jdbc.Driver"); // 드라이브 로딩
+			
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook", "root", "java1234"); // DB 접속
+			conn.setAutoCommit(false); // 자동커밋 X
+			
+			// hashtag테이블이 cashbook을 외래키로 가지고 있으므로 삭제할때는 hashtag의 정보를 삭제 후 cashbook의 정보를 삭제해야 한다
+			// hashtag테이블 삭제 구현
+			String sql = "DELETE FROM hashtag"
+					+ " WHERE cashbook_no=?";
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, cashbookNo);
+			stmt.executeUpdate();
+			
+			// cashbook테이블 삭제 구현
+			String sql2 = "DELETE FROM cashbook"
+					+ " WHERE cashbook_no=?";
+			stmt2 = conn.prepareStatement(sql2); // 쿼리 작성
+			stmt2.setInt(1, cashbookNo);
+			row = stmt2.executeUpdate(); // 삭제 실행
+			
+			conn.commit(); // 커밋 실행
+		} catch (Exception e) {
+			try {
+				conn.rollback(); // 예외가 발생하면 rollback
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return row;
+	}
+	
+	public int updateCashbook(Cashbook cashbook, Hashtag hashtag, int cashbookNo) {
+		int row = 0;
+		// 자원 준비
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		
+		try {
+			Class.forName("org.mariadb.jdbc.Driver"); // 드라이브 로딩
+			
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook", "root", "java1234"); // DB 접속
+			conn.setAutoCommit(false); // 자동커밋 X
+			// cashbook테이블 정보 수정
+			String sql = "UPDATE cashbook SET cash_date=NOW(), kind=?, cash=?, memo=? WHERE cashbook_no=?";
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1, cashbook.getKind());
+			stmt.setInt(2, cashbook.getCash());
+			stmt.setString(3, cashbook.getMemo());
+			stmt.setInt(4, cashbook.getCashbookNo());
+			row = stmt.executeUpdate(); // 수정 실행
+			
+			// hashtag테이블 정보 삭제
+			String sql2 = "DELETE FROM hashtag WHERE cashbook_no=?";
+			stmt2 = conn.prepareStatement(sql2);
+			stmt2.setInt(1, cashbookNo);
+			stmt2.executeUpdate(); // 삭제 실행
+			
+			// hashtag테이블 정보 입력
+			String sql3 = "INSERT INTO hashtag(cashbook_no, tag, create_date) VALUES(?, ?, NOW())";
+			stmt3 = conn.prepareStatement(sql3);
+			stmt3.setInt(1, cashbookNo);
+			stmt3.setString(2, hashtag.getTag());
+			stmt3.executeUpdate();
+			
+			conn.commit();
+		} catch (Exception e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+		
+		return row;
+	}
 }

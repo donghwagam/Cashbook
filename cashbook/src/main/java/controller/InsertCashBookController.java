@@ -15,37 +15,71 @@ import vo.Cashbook;
 
 @WebServlet("/InsertCashBookController")
 public class InsertCashBookController extends HttpServlet {
+	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String y = request.getParameter("y");
-		String m = request.getParameter("m");
-		String d = request.getParameter("d");
-		String cashDate = y+"-"+m+"-"+d;
-		request.setAttribute("cashDate", cashDate);
-		request.getRequestDispatcher("/WEB-INF/view/insertCashBookForm.jsp").forward(request, response);
+		// 정보 받아오기
+		int year = 0;
+		if(request.getParameter("year") != null) {
+			year = Integer.parseInt(request.getParameter("year"));
+		}
+		
+		int month = 0;
+		if(request.getParameter("month") != null) {
+			month = Integer.parseInt(request.getParameter("month"));
+		}
+		
+		int day = 0;
+		if(request.getParameter("day") != null) {
+			day = Integer.parseInt(request.getParameter("day"));
+		}
+		
+		// 디버깅
+		System.out.println("InsertCashBookController.doGet -> year : " + year);
+		System.out.println("InsertCashBookController.doGet -> month : " + month);
+		System.out.println("InsertCashBookController.doGet -> day : " + day);
+		
+		String cashDate = year+"-"+month+"-"+day; // 선택한 날짜
+		
+		request.setAttribute("cashDate", cashDate); // InsertCashbook.jsp에 값을 넘겨주기 위해 저장
+		
+		request.getRequestDispatcher("/WEB-INF/view/InsertCashBook.jsp").forward(request, response);
 	}
-
+	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("utf-8");
-		String cashDate = request.getParameter("cashDate");
-		String kind = request.getParameter("kind");
-		int cash = Integer.parseInt(request.getParameter("cash"));
-		String memo = request.getParameter("memo");
+		request.setCharacterEncoding("utf-8"); // 한글이 깨지지 않게 설정
 		
-		System.out.println(cashDate + " <--cashDate InsertCashBookController.doPost()");
-		System.out.println(kind + " <--kind InsertCashBookController.doPost()");
-		System.out.println(cash + " <--cash InsertCashBookController.doPost()");
-		System.out.println(memo + " <--memo InsertCashBookController.doPost()");
+		// 정보 받아오기
+		String kind = "";
+		if(request.getParameter("kind") != null) {
+			kind = request.getParameter("kind");
+		}
 		
-		Cashbook cashbook = new Cashbook();
-		cashbook.setCashDate(cashDate);
-		cashbook.setKind(kind);
-		cashbook.setCash(cash);
-		cashbook.setMemo(memo);
+		int cash = 0;
+		if(request.getParameter("cash") != null) {
+			cash = Integer.parseInt(request.getParameter("cash"));
+		}
 		
+		String memo = "";
+		if(request.getParameter("memo") != null) {
+			memo = request.getParameter("memo");
+		}
 		
+		String cashDate = "";
+		if(request.getParameter("cashDate") != null) {
+			cashDate = request.getParameter("cashDate");
+		}
+		
+		// 디버깅
+		System.out.println("InsertCashBookController.doPost -> kind : " + kind);
+		System.out.println("InsertCashBookController.doPost -> cash : " + cash);
+		System.out.println("InsertCashBookController.doPost -> memo : " + memo);
+		System.out.println("InsertCashBookController.doPost -> cashDate : " + cashDate);
+		
+		// ------------------------------- 해시태그 구현 시작 -------------------------------
 		List<String> hashtag = new ArrayList<>();
 		String memo2 = memo.replace("#", " #");
 		String[] arr = memo2.split(" ");
+		
 		for(String s : arr) {
 			if(s.startsWith("#")) {
 				String temp = s.replace("#", "");
@@ -54,14 +88,24 @@ public class InsertCashBookController extends HttpServlet {
 				}
 			}
 		}
-		System.out.println(hashtag.size() + " <--hashtag.size InsertCashBookController.doPost()");
-		for(String h : hashtag) {
-			System.out.println(h + " <-- hashtag InsertCashBookController.doPost()");
+		// 디버깅
+		System.out.println("InsertCashBookController.doPost -> hashtag.size() : " + hashtag.size());
+		for(String s : hashtag) {
+			System.out.println("InsertCashBookController.doPost -> s : " + s);
 		}
+		// ------------------------------- 해시태그 구현 끝 -------------------------------
 		
-		CashbookDao cashbookDao = new CashbookDao();
-		cashbookDao.insertCashbook(cashbook, hashtag);
+		Cashbook cashbook = new Cashbook(); // 메서드 매개변수로 사용할 객체 생성
+		// 정보 객체에 저장
+		cashbook.setKind(kind);
+		cashbook.setCashDate(cashDate);
+		cashbook.setCash(cash);
+		cashbook.setMemo(memo);
 		
+		CashbookDao cashbookDao = new CashbookDao(); // 메서드 사용을 위한 객체 생성
+		cashbookDao.insertCashbook(cashbook, hashtag); // 메서드 사용
+		
+		// 입력 후 되돌아가기
 		response.sendRedirect(request.getContextPath()+"/CashBookListByMonthController");
 	}
 }

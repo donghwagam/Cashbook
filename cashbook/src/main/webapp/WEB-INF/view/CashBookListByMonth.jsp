@@ -15,8 +15,9 @@
 <body class="container">
 	<%
 		List<Map<String, Object>> list = (List<Map<String, Object>>)request.getAttribute("list");
-		int y = (Integer)request.getAttribute("y");
-		int m = (Integer)request.getAttribute("m");
+		int year = (Integer)request.getAttribute("year");
+		int month = (Integer)request.getAttribute("month");
+		int cashbookNo = (Integer)request.getAttribute("cashbookNo");
 		
 		int startBlank = (Integer)request.getAttribute("startBlank");
 		int endDay = (Integer)request.getAttribute("endDay");
@@ -24,18 +25,18 @@
 		int totalTd = (Integer)request.getAttribute("totalTd");
 		
 		System.out.println(list.size() +" <- list.size() CashBookListByMonth.jsp");
-		System.out.println(y +" <- y CashBookListByMonth.jsp");
-		System.out.println(m +" <- m CashBookListByMonth.jsp");
+		System.out.println(year +" <- year CashBookListByMonth.jsp");
+		System.out.println(month +" <- month CashBookListByMonth.jsp");
 		
 		System.out.println(startBlank +" <- startBlank CashBookListByMonth.jsp");
 		System.out.println(endDay +" <- endDay CashBookListByMonth.jsp");
 		System.out.println(endBlank +" <- endBlank CashBookListByMonth.jsp");
 		System.out.println(totalTd +" <- totalTd CashBookListByMonth.jsp");
 	%>
-	<h2><%=y%>년 <%=m%>월</h2>
+	<h2><%=year%>년 <%=month%>월</h2>
 	<div>
-		<a href="<%=request.getContextPath()%>/CashBookListByMonthController?y=<%=y%>&m=<%=m-1%>">이전달</a>
-		<a href="<%=request.getContextPath()%>/CashBookListByMonthController?y=<%=y%>&m=<%=m+1%>">다음달</a>
+		<a href="<%=request.getContextPath()%>/CashBookListByMonthController?year=<%=year%>&month=<%=month-1%>">이전달</a>
+		<a href="<%=request.getContextPath()%>/CashBookListByMonthController?year=<%=year%>&month=<%=month+1%>">다음달</a>
 	</div>
 	<!-- 
 		1) 이번날 1일의 요일 firstDayYoil -> startBlank -> 일 0, 월 1, 화 2, ... 토 6
@@ -73,8 +74,8 @@
 							}
 				%>
 						<td class="<%=c%>">
-							<%=i-startBlank %>
-							<a href="<%=request.getContextPath()%>/InsertCashBookController?y=<%=y%>&m=<%=m%>&d=<%=i-startBlank%>" class="btn btn-light">입력</a>
+							<span class="<%=c%>"><%=i-startBlank%></span>
+							<a href="<%=request.getContextPath()%>/InsertCashBookController?year=<%=year%>&month=<%=month%>&day=<%=i-startBlank%>" class="btn btn-light">입력</a>
 							<div>
 								<!-- 해당날짜의 cashbook목록 출력 -->
 								<%
@@ -83,10 +84,12 @@
 										if((Integer)map.get("day") == (i-startBlank)) {
 								%>
 										<div>
+											<a class="text-white" href="<%=request.getContextPath()%>/CashBookOneController?cashbookNo=<%=map.get("cashbookNo")%>">
 											[<%=map.get("kind") %>] <!-- [수입] or [지출] -->
 											<%=map.get("cash") %>원 <!-- 10000원 -->
 											<%=map.get("memo") %>... <!-- sqirr... -->
-										</div>
+											</a>
+										</div>	
 								<%			
 										}
 									}
@@ -109,6 +112,8 @@
 			</tr>
 		</tbody>	
 	</table>
+	
+	
 	<!-- 
 		<%
 		for(Map map : list) {

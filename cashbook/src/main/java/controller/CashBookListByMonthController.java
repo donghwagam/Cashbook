@@ -19,26 +19,26 @@ public class CashBookListByMonthController extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// 1) 월별 가계부 리스트 요청 분석
 		Calendar now = Calendar.getInstance(); // ex) 2022.04.19
-		int y = now.get(Calendar.YEAR);
-		int m = now.get(Calendar.MONTH) + 1; // 0 - 1월, 1 - 2월, ... 11 - 12월
+		int year = now.get(Calendar.YEAR);
+		int month = now.get(Calendar.MONTH) + 1; // 0 - 1월, 1 - 2월, ... 11 - 12월
 		
-		if(request.getParameter("y") != null) {
-			y = Integer.parseInt(request.getParameter("y"));
+		if(request.getParameter("year") != null) {
+			year = Integer.parseInt(request.getParameter("year"));
 		}
-		if(request.getParameter("m") != null) {
-			m = Integer.parseInt(request.getParameter("m"));
+		if(request.getParameter("month") != null) {
+			month = Integer.parseInt(request.getParameter("month"));
 		}
-		if(m==0) {
-			m = 12;
-			y = y-1;
+		if(month==0) {
+			month = 12;
+			year = year-1;
 		}
-		if(m==13) {
-			m = 1;
-			y = y+1;
+		if(month==13) {
+			month = 1;
+			year = year+1;
 		}
 		
-		System.out.println(y+" <-- y");
-		System.out.println(m+" <-- m");
+		System.out.println(year+" <-- year");
+		System.out.println(month+" <-- month");
 		
 		/*
 		 1) startBlank
@@ -50,8 +50,8 @@ public class CashBookListByMonthController extends HttpServlet {
 		// 시작시 필요한 공백 <TD>의 갯수를 구하는 알고리즘 -> startBlank 
 		// firstDay는 오늘날짜를 먼저구하여 날짜만 1일로 변경해서 구하자
 		Calendar firstDay = Calendar.getInstance(); // ex) 2022.04.19
-		firstDay.set(Calendar.YEAR, y);
-		firstDay.set(Calendar.MONTH, m-1); // 자바 달력API는 1월을 0으로, 2월을 1로, ... 12월을 11로 설정되어있음
+		firstDay.set(Calendar.YEAR, year);
+		firstDay.set(Calendar.MONTH, month-1); // 자바 달력API는 1월을 0으로, 2월을 1로, ... 12월을 11로 설정되어있음
 		firstDay.set(Calendar.DATE, 1); // ex) 2022.04.01
 		int dayOfWeek = firstDay.get(Calendar.DAY_OF_WEEK);
 		// dayOfWeek 	일1, 월2, ... 토7
@@ -74,7 +74,7 @@ public class CashBookListByMonthController extends HttpServlet {
 		
 		// 2) 모델값(월별 가계부 리스트)을 반환하는 비지니스로직(모델) 호출
 		CashbookDao cashbookDao = new CashbookDao();
-		List<Map<String, Object>> list = cashbookDao.selectCashbookListByMonth(y, m);
+		List<Map<String, Object>> list = cashbookDao.selectCashbookListByMonth(year, month);
 		/*
 		 달력출력에 필요한 모델값(1), 2), 3), 4)) + 데이터베이스에서 반환된 모델값(list, y출력년도, m출력월) + 오늘날짜(today)
 		 */
@@ -84,8 +84,8 @@ public class CashBookListByMonthController extends HttpServlet {
 		request.setAttribute("totalTd", totalTd);
 		
 		request.setAttribute("list", list);
-		request.setAttribute("y", y);
-		request.setAttribute("m", m);
+		request.setAttribute("year", year);
+		request.setAttribute("month", month);
 		// 3) 뷰 포워딩
 		request.getRequestDispatcher("/WEB-INF/view/CashBookListByMonth.jsp").forward(request, response);
 	}
