@@ -11,15 +11,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import dao.HashtagDao;
-// 1.(Model)dao에서 만든 메서드를 이용해서
-// 2.(Controller)a태그로 창을 받으면 doGet, form태그로 창을 받으면 doPost / setAttribute이용해서 list넘길거임. Dispatcher이용해서 view단으로 넘김
-// 3.(View) getAttribute이용해서 list받아줌. 
-@WebServlet("/TagController")
-public class TagController extends HttpServlet {
+
+@WebServlet("/TagOneController")
+public class TagOneController extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String tag = request.getParameter("tag");
+		int tagCount = Integer.parseInt(request.getParameter("tagCount"));
+		
 		HashtagDao hashtagDao = new HashtagDao();
-		List<Map<String,Object>> list = hashtagDao.selectTagRankList();
+		List<Map<String, Object>> list = hashtagDao.selectTagOne(tag);
+		
+		request.setAttribute("tagCount", tagCount);
 		request.setAttribute("list", list);
-		request.getRequestDispatcher("/WEB-INF/view/TagList.jsp").forward(request, response);
+		
+		request.getRequestDispatcher("/WEB-INF/view/TagOne.jsp").forward(request, response);
 	}
 }
