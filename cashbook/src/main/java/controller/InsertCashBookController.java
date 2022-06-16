@@ -9,6 +9,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import dao.CashbookDao;
 import vo.Cashbook;
@@ -17,6 +18,17 @@ import vo.Cashbook;
 public class InsertCashBookController extends HttpServlet {
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// 세션생성
+		HttpSession session = request.getSession();
+		// 세션ID를 가져오기
+		String sessionMemberId = (String)session.getAttribute("sessionMemberId");
+						
+		// 로그인이 하지 않은 상태라면
+		if(sessionMemberId == null) {
+				response.sendRedirect(request.getContextPath()+"/LoginController");
+				return;
+		}
+		
 		// 정보 받아오기
 		int year = 0;
 		if(request.getParameter("year") != null) {
@@ -46,9 +58,25 @@ public class InsertCashBookController extends HttpServlet {
 	}
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// 세션생성
+		HttpSession session = request.getSession();
+		// 세션ID를 가져오기
+		String sessionMemberId = (String)session.getAttribute("sessionMemberId");
+						
+		// 로그인이 하지 않은 상태라면
+		if(sessionMemberId == null) {
+				response.sendRedirect(request.getContextPath()+"/LoginController");
+				return;
+		}
+		
 		request.setCharacterEncoding("utf-8"); // 한글이 깨지지 않게 설정
 		
-		// 정보 받아오기
+		// 가계부입력페이지로부터 입력값 받아오기
+		String cashDate = "";
+		if(request.getParameter("cashDate") != null) {
+			cashDate = request.getParameter("cashDate");
+		}
+		
 		String kind = "";
 		if(request.getParameter("kind") != null) {
 			kind = request.getParameter("kind");
@@ -64,48 +92,49 @@ public class InsertCashBookController extends HttpServlet {
 			memo = request.getParameter("memo");
 		}
 		
-		String cashDate = "";
-		if(request.getParameter("cashDate") != null) {
-			cashDate = request.getParameter("cashDate");
-		}
-		
 		// 디버깅
-		System.out.println("InsertCashBookController.doPost -> kind : " + kind);
-		System.out.println("InsertCashBookController.doPost -> cash : " + cash);
-		System.out.println("InsertCashBookController.doPost -> memo : " + memo);
-		System.out.println("InsertCashBookController.doPost -> cashDate : " + cashDate);
+		System.out.println("InsertCashBookController.doPost().kind : " + kind);
+		System.out.println("InsertCashBookController.doPost().cash : " + cash);
+		System.out.println("InsertCashBookController.doPost().memo : " + memo);
+		System.out.println("InsertCashBookController.doPost().cashDate : " + cashDate);
 		
 		// ------------------------------- 해시태그 구현 시작 -------------------------------
 		List<String> hashtag = new ArrayList<>();
+		// 1) #앞에 띄어쓰기
 		String memo2 = memo.replace("#", " #");
+		// 2) 공백기준으로 문자열 쪼개기
 		String[] arr = memo2.split(" ");
 		
 		for(String s : arr) {
+			// 3) #로 시작하면
 			if(s.startsWith("#")) {
+				// 4) #가 없는상태로
 				String temp = s.replace("#", "");
+				// 5) 문자를 저장
 				if(temp.length()>0) {
 					hashtag.add(temp);
 				}
 			}
 		}
 		// 디버깅
-		System.out.println("InsertCashBookController.doPost -> hashtag.size() : " + hashtag.size());
+		System.out.println("InsertCashBookController.doPost().hashtag.size() : " + hashtag.size());
 		for(String s : hashtag) {
-			System.out.println("InsertCashBookController.doPost -> s : " + s);
+			System.out.println("InsertCashBookController.doPost().s : " + s);
 		}
 		// ------------------------------- 해시태그 구현 끝 -------------------------------
 		
-		Cashbook cashbook = new Cashbook(); // 메서드 매개변수로 사용할 객체 생성
-		// 정보 객체에 저장
+		// Cashbook 객체 생성
+		Cashbook cashbook = new Cashbook(); 
+		// 정보를 객체에 저장
 		cashbook.setKind(kind);
 		cashbook.setCashDate(cashDate);
 		cashbook.setCash(cash);
 		cashbook.setMemo(memo);
-		
+		// 가계부입력메서드 적용
 		CashbookDao cashbookDao = new CashbookDao(); // 메서드 사용을 위한 객체 생성
-		cashbookDao.insertCashbook(cashbook, hashtag); // 메서드 사용
+		cashbookDao.insertCashbook(cashbook, hashtag, sessionMemberId); // 메서드 사용
 		
-		// 입력 후 되돌아가기
+		// 가계부입력 성공시 가계부목록으로 돌아가기
 		response.sendRedirect(request.getContextPath()+"/CashBookListByMonthController");
 	}
 }

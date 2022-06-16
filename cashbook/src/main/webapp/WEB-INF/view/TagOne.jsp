@@ -6,18 +6,33 @@
 <meta charset="UTF-8">
 <title>TagOne</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/style/Style.css">
 </head>
 <body>
 <%
 	int tagCount = (Integer)request.getAttribute("tagCount");
 	List<Map<String, Object>> list = (List<Map<String, Object>>)request.getAttribute("list");
 %>
-<div class="container">
-	<h1 class="text-center">카테고리별 상세보기</h1>
+<div class="container-fluid">
+	<div class="cash_main">
+	
+	<br><br>
+	<h1 class="text-center text-dark" style="font-size: 50px;">태그 상세보기</h1>
+	
 	<h3 class="text-center text-secondary">total : <%=tagCount%>개</h3>
-	<a href="<%=request.getContextPath()%>/TagController" class="btn btn-outline-info">tags</a>
-	<table class="table text-center">
-		<thead class="table-info">
+	
+	<div class="float-left">
+	<a href="<%=request.getContextPath()%>/TagController" class="btn btn-outline-dark">#TAG</a>
+	<a href="<%=request.getContextPath() %>/CashBookListByMonthController" class="btn btn-outline-dark">가계부</a>
+	</div>
+	
+	<div class="float-right">
+		<a href="<%=request.getContextPath() %>/SelectMemberOneController?memberId=<%=session.getAttribute("sessionMemberId") %>" class="text-dark">[<%=session.getAttribute("sessionMemberId") %>]</a>님 반갑습니다.&nbsp;
+		<a href="<%=request.getContextPath() %>/LogoutController" class="btn btn-outline-dark btn-sm">LOGOUT</a>
+	</div><br><br><br><br>
+	
+	<table class="table table-bordered">
+		<thead class="table-dark">
 			<tr>
 				<th>해시태그</th>
 				<th>날짜</th>
@@ -40,6 +55,7 @@
 			%>
 		</tbody>
 	</table>
+	</div>
 </div>
 </body>
 </html>

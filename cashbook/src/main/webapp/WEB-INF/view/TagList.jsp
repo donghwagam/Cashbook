@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+ <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import = "java.util.*" %>
 <!DOCTYPE html>
 <html>
@@ -6,20 +6,31 @@
 <meta charset="UTF-8">
 <title>TagList</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/style/Style.css">
 </head>
 <body>
 <%
 	List<Map<String,Object>> list = (List<Map<String,Object>>)request.getAttribute("list");
 %>
-<div class="container">
-	<h1 class="text-center">해시태그</h1>
-	<div>
-		<a href="<%=request.getContextPath()%>/CashBookListByMonthController" class="btn btn-outline-info">가계부 돌아가기</a>
-		<a href="<%=request.getContextPath()%>/TagKindSearchController" class="btn btn-outline-info">수입/지출별 검색</a>
-		<a href="<%=request.getContextPath()%>/TagDateSearchController" class="btn btn-outline-info">날짜별 검색</a>
-	</div> <br>
-	<table class="table text-center">
-		<thead class="table-info">
+<div class="container-fluid">
+	<div class="cash_main">
+	
+	<br><br>
+	<h1 class="text-center text-dark" style="font-size: 50px;">#해시태그 목록</h1>
+	
+	<div class="float-left">
+		<a href="<%=request.getContextPath() %>/CashBookListByMonthController" class="btn btn-outline-dark">가계부</a>
+		<a href="<%=request.getContextPath()%>/TagKindSearchController" class="btn btn-outline-dark">수입/지출별 검색</a>
+		<a href="<%=request.getContextPath()%>/TagDateSearchController" class="btn btn-outline-dark">날짜별 검색</a>
+	</div>
+	
+	<div class="float-right">
+		<a href="<%=request.getContextPath() %>/SelectMemberOneController?memberId=<%=session.getAttribute("sessionMemberId") %>" class="text-dark">[<%=session.getAttribute("sessionMemberId") %>]</a>님 반갑습니다.&nbsp;
+		<a href="<%=request.getContextPath() %>/LogoutController" class="btn btn-outline-dark btn-sm">LOGOUT</a>
+	</div><br><br><br><br>
+	
+	<table class="table table-bordered">
+		<thead class="table-dark">
 			<tr>
 				<th>순위</th>
 				<th>해시태그</th>
@@ -40,6 +51,7 @@
 			%>
 		</tbody>
 	</table>
+	</div>
 </div>
 </body>
 </html>

@@ -1,0 +1,23 @@
+@charset "UTF-8";
+.bg_main {
+	height: 100vh;
+	background: url(.././images/bg_main.png);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+ }
+ 
+ .box{
+  width : 500px;
+  height : 500px;
+  position: absolute;
+  top: 30%;
+  left: 40%;
+  margin: -50px 0 0 -50px;
+}
+
+.cash_main {
+	height: 100vh;
+	background: url(.././images/paper_bg.jpg);
+	background-position: center;
+ }

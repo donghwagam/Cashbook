@@ -13,31 +13,23 @@ import java.util.Map;
 import vo.Cashbook;
 import vo.Hashtag;
 
-// MODEL
 public class CashbookDao {
-	public List<Map<String, Object>> selectCashbookListByMonth(int y, int m) {
+	
+	// 가계부월별 목록
+	public List<Map<String, Object>> selectCashbookListByMonth(int y, int m, String memberId) {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-		/*
-		 SELECT 
-		 	cashbook_no cashbookNo
-		 	,DAY(cash_date) day
-		 	,kind
-		 	,cash
-		 FROM cashbook
-		 WHERE YEAR(cash_date) = ? AND MONTH(cash_date) = ?
-		 ORDER BY DAY(cash_date) ASC
-		 */
+		
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		String sql = "SELECT"
-				+ "		 	cashbook_no cashbookNo"
-				+ "		 	,DAY(cash_date) day"
-				+ "		 	,kind"
-				+ "		 	,cash"
+				+ " 		cashbook_no cashbookNo"
+				+ " 		,DAY(cash_date) day "
+				+ " 		,kind"
+				+ " 		,cash"
 				+ " 		,LEFT(memo, 5) memo"
 				+ "		 FROM cashbook"
-				+ "		 WHERE YEAR(cash_date) = ? AND MONTH(cash_date) = ?"
+				+ "		 WHERE YEAR(cash_date) = ? AND MONTH(cash_date) = ? AND member_id=?"
 				+ "		 ORDER BY DAY(cash_date) ASC, KIND ASC";
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
@@ -45,6 +37,7 @@ public class CashbookDao {
 			stmt = conn.prepareStatement(sql);
 			stmt.setInt(1, y);
 			stmt.setInt(2, m);
+			stmt.setString(3, memberId);
 			rs = stmt.executeQuery();
 			while(rs.next()) {
 				Map<String, Object> map = new HashMap<String, Object>();
@@ -69,7 +62,51 @@ public class CashbookDao {
 		return list;
 	}
 	
-	public void insertCashbook(Cashbook cashbook, List<String> hashtag) {
+	// 가계부 상세보기
+	public List<Map<String, Object>> selectCashBookOne(int cashbookNo) {
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		String sql = "SELECT cashbook_no cashbookNo, cash_date cashDate, kind, cash, memo "
+				+ "FROM cashbook "
+				+ "WHERE cashbook_no = ?";
+		
+		try {
+			Class.forName("org.mariadb.jdbc.Driver");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, cashbookNo);
+			rs = stmt.executeQuery();
+			
+			while(rs.next()) {
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("cashbookNo", rs.getInt("cashbookNo"));
+				map.put("cashDate", rs.getString("cashDate"));
+				map.put("kind", rs.getString("kind"));
+				map.put("cash", rs.getInt("cash"));
+				map.put("memo", rs.getString("memo"));
+				list.add(map);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return list;	
+	}
+	
+	// 가계부입력
+	public void insertCashbook(Cashbook cashbook, List<String> hashtag, String memberId) {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -78,16 +115,17 @@ public class CashbookDao {
 			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
 			conn.setAutoCommit(false); // 자동커밋을 해제
 			
-			String sql = "INSERT INTO cashbook(cash_date,kind,cash,memo,update_date,create_date)"
-					+ " VALUES(?,?,?,?,NOW(),NOW())";
+			String sql = "INSERT INTO cashbook(cash_date,kind,cash,memo,update_date,create_date,member_id)"
+					+ " VALUES(?,?,?,?,NOW(),NOW(),?)";
 			
-			// insert + select 방금생성된 행의 키값 ex) select 방금입력한 cashbook_no from cashbook;
+			// INSERT + SELECT 방금생성된 행의 키값 ex) select 방금입력한 cashbook_no from cashbook;
 			stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS); 
 			stmt.setString(1, cashbook.getCashDate());
 			stmt.setString(2, cashbook.getKind());
 			stmt.setInt(3, cashbook.getCash());
 			stmt.setString(4, cashbook.getMemo());
-			stmt.executeUpdate(); // insert
+			stmt.setString(5, memberId);
+			stmt.executeUpdate(); // INSERT
 			rs = stmt.getGeneratedKeys(); // select 방금입력한 cashbook_no from cashbook
 			int cashbookNo = 0;
 			if(rs.next()) {
@@ -121,143 +159,42 @@ public class CashbookDao {
 		}
 	}
 	
-	// 상세보기 눌렀을때 정보들고오기위한 메서드
-	public Cashbook selectCashBookOne(int cashbookNo) {
-		// return할 cashBook 선언
-		Cashbook cashBook = null;
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		
-		try {
-			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
-			String sql = "SELECT * FROM cashbook WHERE cashbook_no =?";
-			
-			stmt = conn.prepareStatement(sql);
-			stmt.setInt(1, cashbookNo);
-			
-			rs = stmt.executeQuery();
-			
-			if(rs.next()) {
-				cashBook = new Cashbook();
-				cashBook.setCashbookNo(rs.getInt("cashbook_no"));
-				cashBook.setCashDate(rs.getString("cash_date"));
-				cashBook.setKind(rs.getString("kind"));
-				cashBook.setCash(rs.getInt("cash"));
-				cashBook.setMemo(rs.getString("memo"));
-				cashBook.setUpdateDate(rs.getString("update_date"));
-				cashBook.setCreateDate(rs.getString("create_date"));
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				rs.close();
-				stmt.close();
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		return cashBook;	
-	}
-	
-	public int deleteCashbook(int cashbookNo) {
-		int row = 0;
+	// 가계부삭제
+	public void deleteCashbook(int cashbookNo) {
 		// 자원 준비
 		Connection conn = null;
-		PreparedStatement stmt = null;
-		PreparedStatement stmt2 = null;
+		PreparedStatement hashStmt = null;
+		PreparedStatement cashStmt = null;
+		String hashSql = "DELETE FROM hashtag WHERE cashbook_no=?";
+		String cashSql = "DELETE FROM cashbook WHERE cashbook_no=?";
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver"); // 드라이브 로딩
-			
 			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook", "root", "java1234"); // DB 접속
 			conn.setAutoCommit(false); // 자동커밋 X
 			
 			// hashtag테이블이 cashbook을 외래키로 가지고 있으므로 삭제할때는 hashtag의 정보를 삭제 후 cashbook의 정보를 삭제해야 한다
-			// hashtag테이블 삭제 구현
-			String sql = "DELETE FROM hashtag"
-					+ " WHERE cashbook_no=?";
-			stmt = conn.prepareStatement(sql);
-			stmt.setInt(1, cashbookNo);
-			stmt.executeUpdate();
+			// hashtag 먼저삭제
+			hashStmt = conn.prepareStatement(hashSql);
+			hashStmt.setInt(1, cashbookNo);
+			hashStmt.executeUpdate();
 			
-			// cashbook테이블 삭제 구현
-			String sql2 = "DELETE FROM cashbook"
-					+ " WHERE cashbook_no=?";
-			stmt2 = conn.prepareStatement(sql2); // 쿼리 작성
-			stmt2.setInt(1, cashbookNo);
-			row = stmt2.executeUpdate(); // 삭제 실행
+			// cashbook 삭제
+			cashStmt = conn.prepareStatement(cashSql); // 쿼리 작성
+			cashStmt.setInt(1, cashbookNo);
+			cashStmt.executeUpdate();
 			
 			conn.commit(); // 커밋 실행
 		} catch (Exception e) {
-			try {
-				conn.rollback(); // 예외가 발생하면 rollback
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
 			e.printStackTrace();
 		} finally {
 			try {
+				hashStmt.close();
+				cashStmt.close();
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		return row;
-	}
-	
-	public int updateCashbook(Cashbook cashbook, Hashtag hashtag, int cashbookNo) {
-		int row = 0;
-		// 자원 준비
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		PreparedStatement stmt2 = null;
-		PreparedStatement stmt3 = null;
-		
-		try {
-			Class.forName("org.mariadb.jdbc.Driver"); // 드라이브 로딩
-			
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook", "root", "java1234"); // DB 접속
-			conn.setAutoCommit(false); // 자동커밋 X
-			// cashbook테이블 정보 수정
-			String sql = "UPDATE cashbook SET cash_date=NOW(), kind=?, cash=?, memo=? WHERE cashbook_no=?";
-			stmt = conn.prepareStatement(sql);
-			stmt.setString(1, cashbook.getKind());
-			stmt.setInt(2, cashbook.getCash());
-			stmt.setString(3, cashbook.getMemo());
-			stmt.setInt(4, cashbook.getCashbookNo());
-			row = stmt.executeUpdate(); // 수정 실행
-			
-			// hashtag테이블 정보 삭제
-			String sql2 = "DELETE FROM hashtag WHERE cashbook_no=?";
-			stmt2 = conn.prepareStatement(sql2);
-			stmt2.setInt(1, cashbookNo);
-			stmt2.executeUpdate(); // 삭제 실행
-			
-			// hashtag테이블 정보 입력
-			String sql3 = "INSERT INTO hashtag(cashbook_no, tag, create_date) VALUES(?, ?, NOW())";
-			stmt3 = conn.prepareStatement(sql3);
-			stmt3.setInt(1, cashbookNo);
-			stmt3.setString(2, hashtag.getTag());
-			stmt3.executeUpdate();
-			
-			conn.commit();
-		} catch (Exception e) {
-			try {
-				conn.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
-		}
-		
-		return row;
 	}
 }
