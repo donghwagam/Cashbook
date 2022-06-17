@@ -106,7 +106,17 @@
 								%>
 										<div>
 											<a class="text-dark" href="<%=request.getContextPath()%>/CashBookOneController?cashbookNo=<%=map.get("cashbookNo")%>">
-											[<%=map.get("kind") %>] <!-- 수입/지출 -->
+								<%
+											if("수입".equals(map.get("kind"))) {
+								%>
+												<span class="text-primary">[<%=map.get("kind") %>]</span>
+								<% 				
+											} else {
+								%>
+												<span class="text-danger">[<%=map.get("kind") %>]</span>								
+								<%
+											}
+								%>
 											<%=map.get("cash") %>원 <!-- 금액 -->
 											<%=map.get("memo") %>... <!-- 내역 -->
 											</a>

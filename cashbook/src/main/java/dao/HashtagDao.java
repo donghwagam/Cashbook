@@ -9,30 +9,27 @@ import java.util.*;
 
 
 public class HashtagDao {
-	public List<Map<String,Object>> selectTagRankList() {
+	public List<Map<String,Object>> selectTagRankList(String sessionMemberId) {
 		List<Map<String,Object>> list = new ArrayList<>();
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		try {
-			/*
-			 	SELECT t.tag, t.cnt, RANK() over(ORDER BY t.cnt DESC) ranking
-				FROM 
-				(SELECT tag, COUNT(*) cnt
-				FROM hashtag
-				GROUP BY tag) t
-			 */
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
-			String sql = "SELECT t.tag, t.cnt, RANK() over(ORDER BY t.cnt DESC) rank"
-					+ "				FROM"
-					+ "				(SELECT tag, COUNT(*) cnt"
-					+ "				FROM hashtag"
-					+ "				GROUP BY tag) t";
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
+			String sql = "SELECT kind, tag, cnt, RANK() over(ORDER BY cnt DESC) rank"
+					+ "			FROM (SELECT c.kind kind, h.tag tag, COUNT(*) cnt, member_id memberId"
+					+ "			FROM cashbook c JOIN hashtag h"
+					+ "			ON c.cashbook_no = h.cashbook_no"
+					+ "			GROUP BY h.tag) t"
+					+ "			WHERE memberId = ?";
 			stmt = conn.prepareStatement(sql);
+			stmt.setString(1, sessionMemberId);
+			
 			rs = stmt.executeQuery();
 			while(rs.next()) {
 				Map<String, Object> map = new HashMap<>();
+				map.put("kind", rs.getString("kind"));
 				map.put("tag", rs.getString("tag"));
 				map.put("cnt", rs.getInt("t.cnt"));
 				map.put("rank", rs.getInt("rank"));
@@ -50,22 +47,24 @@ public class HashtagDao {
 		return list;
 	}
 	
-	public List<Map<String, Object>> tagKindSearchList(String kind) {
+	public List<Map<String, Object>> tagKindSearchList(String kind, String memberId) {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		String sql = "SELECT RANK() over(ORDER BY t.cnt DESC) rank, t.tag tag, t.cnt cnt"
-					+ " FROM (SELECT t.tag tag, COUNT(*) cnt"
-					+ "		  FROM hashtag t INNER JOIN cashbook c"
-					+ "		  ON t.cashbook_no = c.cashbook_no"
-					+ "		  WHERE c.kind = ?"
-					+ "		  GROUP BY t.tag) t";
+				+ "		FROM (SELECT t.tag tag, COUNT(*) cnt, c.member_id memberId"
+				+ "				FROM hashtag t INNER JOIN cashbook c"
+				+ "		 		ON t.cashbook_no = c.cashbook_no"
+				+ "		 		WHERE c.kind = ? "
+				+ "				GROUP BY t.tag) t"
+				+ "		WHERE memberId = ?";
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			stmt = conn.prepareStatement(sql);
 			stmt.setString(1, kind);
+			stmt.setString(2, memberId);
 			rs = stmt.executeQuery();
 	         while(rs.next()) {
 	             Map<String, Object> map = new HashMap<>();
@@ -86,21 +85,22 @@ public class HashtagDao {
 		return list;
 	}
 	
-	public List<Map<String, Object>> tagDateSearchList(String cashDate) {
+	public List<Map<String, Object>> tagDateSearchList(String cashDate, String memberId) {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		String sql = "SELECT h.tag tag, COUNT(*) cnt, RANK() over(ORDER BY cnt DESC) ranking"
-					+ " FROM hashtag h INNER JOIN cashbook c"
-					+ "		ON h.cashbook_no = c.cashbook_no"
-					+ " WHERE c.cash_date=?"
-					+ " GROUP BY tag";
+				+ "		FROM hashtag h INNER JOIN cashbook c"
+				+ "		ON h.cashbook_no = c.cashbook_no"
+				+ "		WHERE c.cash_date=? AND c.member_id = ?"
+				+ "		GROUP BY tag";
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			stmt = conn.prepareStatement(sql);
 			stmt.setString(1, cashDate);
+			stmt.setString(2, memberId);
 			rs = stmt.executeQuery();
 	         while(rs.next()) {
 	             Map<String, Object> map = new HashMap<>();
@@ -133,7 +133,7 @@ public class HashtagDao {
 					+ " ORDER BY c.cash_date";
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			stmt = conn.prepareStatement(sql);
 			stmt.setString(1, tag);
 			rs = stmt.executeQuery();

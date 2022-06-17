@@ -33,7 +33,7 @@ public class CashbookDao {
 				+ "		 ORDER BY DAY(cash_date) ASC, KIND ASC";
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			stmt = conn.prepareStatement(sql);
 			stmt.setInt(1, y);
 			stmt.setInt(2, m);
@@ -75,7 +75,7 @@ public class CashbookDao {
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			stmt = conn.prepareStatement(sql);
 			stmt.setInt(1, cashbookNo);
 			rs = stmt.executeQuery();
@@ -112,7 +112,7 @@ public class CashbookDao {
 		ResultSet rs = null;
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			conn.setAutoCommit(false); // 자동커밋을 해제
 			
 			String sql = "INSERT INTO cashbook(cash_date,kind,cash,memo,update_date,create_date,member_id)"
@@ -170,7 +170,7 @@ public class CashbookDao {
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver"); // 드라이브 로딩
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook", "root", "java1234"); // DB 접속
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook", "root", "mariadb1234"); // DB 접속
 			conn.setAutoCommit(false); // 자동커밋 X
 			
 			// hashtag테이블이 cashbook을 외래키로 가지고 있으므로 삭제할때는 hashtag의 정보를 삭제 후 cashbook의 정보를 삭제해야 한다

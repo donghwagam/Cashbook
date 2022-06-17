@@ -32,6 +32,7 @@
 	<table class="table table-bordered">
 		<thead class="table-dark">
 			<tr>
+				<th>분류</th>
 				<th>순위</th>
 				<th>해시태그</th>
 				<th>개수</th>
@@ -42,6 +43,7 @@
 				for(Map<String,Object> map : list) {
 			%>
 					<tr>
+						<td><%=map.get("kind")%></td>
 						<td><%=map.get("rank")%></td>
 						<td><a href="<%=request.getContextPath()%>/TagOneController?tag=<%=map.get("tag")%>&tagCount=<%=map.get("cnt")%>"><%=map.get("tag")%></a></td>
 						<td><%=map.get("cnt")%></td>

@@ -33,7 +33,8 @@ public class TagController extends HttpServlet {
 		}
 		
 		HashtagDao hashtagDao = new HashtagDao();
-		List<Map<String,Object>> list = hashtagDao.selectTagRankList();
+		
+		List<Map<String,Object>> list = hashtagDao.selectTagRankList(sessionMemberId);
 		request.setAttribute("list", list);
 		
 		request.getRequestDispatcher("/WEB-INF/view/TagList.jsp").forward(request, response);

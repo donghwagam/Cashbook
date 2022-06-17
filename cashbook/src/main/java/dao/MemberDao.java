@@ -27,7 +27,7 @@ public class MemberDao {
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			stmt = conn.prepareStatement(sql);
 			stmt.setString(1, member.getMemberId());
 			stmt.setString(2, member.getMemberPw());
@@ -59,7 +59,7 @@ public class MemberDao {
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			
 			String sql = "INSERT INTO member(member_id, member_pw, create_date)\r\n"
 					+ "VALUES (?, PASSWORD(?), NOW())";
@@ -89,7 +89,7 @@ public class MemberDao {
 
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			
 			String sql = "UPDATE member SET member_pw = PASSWORD(?) WHERE member_id = ? AND member_pw = PASSWORD(?)";		
 			stmt = conn.prepareStatement(sql);
@@ -113,7 +113,7 @@ public class MemberDao {
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			conn.setAutoCommit(false);
 			
 			String deleteCashbookSql = "DELETE FROM cashbook WHERE member_id = ?";
@@ -151,7 +151,7 @@ public class MemberDao {
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","java1234");
+			conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/cashbook","root","mariadb1234");
 			String sql = "SELECT member_id memberId, member_pw memberPw, create_date createDate FROM  member WHERE member_id = ?";
 			stmt= conn.prepareStatement(sql);
 			stmt.setString(1, memberId);
